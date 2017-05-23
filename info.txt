@@ -1,0 +1,36 @@
+Natunnel Server Protocol:
+
+Three parties:
+S: Natunnel Server
+P: Passive Party
+A: Active Party
+
+== Passive Party ID registration ==
+P -> S: REGISTER
+S -> P: REGISTER_OK, pub_id, priv_token
+
+== Who am I session ==
+X -> S: WHOAMI
+S -> X: WAI_UDP, ip1, port1, ip2, port2, WAI_TCP, ip3, port3, ip4, port4, WYA, ip5, port5
+X -> ip1/port1: (connect for TCP; send anything for UDP)
+ip1/port1 -> X: WHOYOUARE, X's ip, port
+X -> ip2/port2: (use the same src port to do again)
+ip2/port2 -> X: WHOYOUARE, X's ip, port
+
+== Passive Party update presence ==
+P -> S: UPDATE, priv_token, method1, method2, ...
+S -> P: UPDATE_OK
+method:
+  method_name:param1:param2...
+  P2PNAT: Simultaneous connect, no listen. Ford's USENIX-ATC05 paper.
+    P2PNAT:1.2.3.4:6666
+  UDT: UDP-based Data Transfer Library
+    UDT:1.2.3.4:6666
+
+== NAT Punch Through ==
+1.  A -> S: QUERY, pub_id
+2.  S -> A: QUERY_OK, method1, method2, ...
+3.  A -> S: INVITE, pub_id, P's method, A's method
+2a. S -> A: INVITE_A, P's method, A's method
+2b. S -> P: INVITE_P, P's method, A's method (2a,2b no order)
+3a. A <-> P: (connect) hole punching, tunnel data
